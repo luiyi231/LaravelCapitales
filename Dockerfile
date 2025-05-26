@@ -1,17 +1,22 @@
-# Usa una imagen oficial PHP con Apache
 FROM php:8.2-apache
 
-# Instala extensiones necesarias para Laravel
-RUN docker-php-ext-install pdo pdo_mysql
+# Instala extensiones necesarias
+RUN apt-get update && apt-get install -y \
+    libzip-dev \
+    zip \
+    unzip \
+    && docker-php-ext-install pdo pdo_mysql zip
 
 # Copia todo el código al contenedor
 COPY . /var/www/html/
 
-# Da permisos
+# Crea las carpetas necesarias (por si no existen)
+RUN mkdir -p /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Cambia permisos para que Apache pueda escribir
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Expone puerto 80
+# Expone el puerto 80 para Apache
 EXPOSE 80
 
-# Levanta Apache en foreground
 CMD ["apache2-foreground"]
